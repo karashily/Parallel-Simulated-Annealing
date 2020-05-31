@@ -76,7 +76,7 @@ class Placer():
             self.T=self.T*100
         else:
             if (self.T * self.currentDeltaCost / self.sigma**2 < 100):
-                self.T = self.T * exp(self.T * self.currentDeltaCost / self.sigma**2)
+                self.T = self.T * exp(self.T * self.currentDeltaCost / self.sigma**2 + 0.00001) 
             else:
                 self.T = self.T * exp(100)
 

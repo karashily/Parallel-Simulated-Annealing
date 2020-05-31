@@ -3,50 +3,59 @@ from numpy import floor
 
 class Chip():
     def __init__(self, rows, cols, cells, conns, netlist):
-
-        # initialize object constants:
         self.rowsNo = rows
         self.colsNo = cols
         self.cellsNo = cells
         self.netsNo = conns
         self.netlist = netlist
 
-        # initialize object variables:
         self.area = self.rowsNo * self.colsNo
-
         self.cellLoc={}
+
         self.resetCellLoc()
-
         self.cellNetIncidence()
-
-        # Calculate the current total cost:
         self.calcHpCost()
+    
+    @classmethod
+    def loadChip(cls, filename):
+        print('Loading', filename, '.......',)
+        content = open(filename, "r").readlines()
+        firstLine = content[0].split()
+        cellsNo = int(firstLine[0])
+        connsNo = int(firstLine[1])
+        rowsNo  = int(firstLine[2])
+        colsNo  = int(firstLine[3])
+
+        netlist =[]
+        for net in range(1, connsNo + 1):
+            netBlocks = []
+            netInfo =  content[net].split()
+            netBlockNo = int(netInfo[0])
+            for i in range(1, netBlockNo + 1):
+                netBlocks.append(int(netInfo[i]))
+            netlist.append(netBlocks)
+
+        newChip = cls(rowsNo, colsNo, cellsNo, connsNo, netlist)
+        print('Done.....!')
+        return newChip
 
     def resetCellLoc(self):
-        # Empty the current location dict:
         self.cellLoc={}
-
-        # create random locations:
         indices = random.sample(range(self.area), self.cellsNo)
         randomlocs =  list(range(self.area)[i] for i in indices)
-
-        # resent all locations to their random locations:
         for i in range(self.cellsNo):
             y = int(floor(randomlocs[i]*1.0 / self.colsNo))
             x = int(randomlocs[i] - y * self.colsNo)
             self.cellLoc[i] = (x,y)
 
-    def calcBoundingBox(self, net_ID):
+    def calcBoundingBox(self, netId):
         rows = []
         cols = []
 
-        # Loop over all cells in the net
-        for cell in self.netlist[net_ID]:
+        for cell in self.netlist[netId]:
             cols.append(self.cellLoc[cell][0])
             rows.append(self.cellLoc[cell][1])
 
-        # find the left most, right most, highest and lowest cells in the net:
-        # Then calculate the bounding box dimension:
         delta_y = max(rows) - min(rows)
         delta_x = max(cols) - min(cols)
 
@@ -58,17 +67,12 @@ class Chip():
             self.totCost += self.calcBoundingBox(net)
 
     def subCalcHpCost(self,i,j):
-        affectedNets = []
-
-        # Find the nets affected by this change:
         affectedNets = self.incidence[i] + self.incidence[j]
-
         affectedNets= list(set(affectedNets))
 
         cost = 0
         for net in affectedNets:
             cost += self.calcBoundingBox(net)
-
         return cost
 
     def swapCells(self,i,j):

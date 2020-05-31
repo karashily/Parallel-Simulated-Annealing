@@ -99,7 +99,7 @@ for inputFile in Benchmarks:
     time4 = []
 
     # Optimize the placement:
-    for i in range(50):
+    for i in range(20):
         t0 = time.time()
         cost =  SA1.anneal()
         cost1.append(cost)
