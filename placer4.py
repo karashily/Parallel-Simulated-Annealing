@@ -101,7 +101,7 @@ class Placer():
                 check = 1
         else:
             # check = exp(-deltaCost/self.T)
-            check = exp(-deltaCost*(self.iter-self.lastGoodMove)/(self.iter-self.lastBadMove + 0.0000001)/self.T)
+            check = exp(-deltaCost*(self.iter-self.lastGoodMove)/self.T)
 
         if random.uniform(0, 1) <= check:
             self.chip.commitSwap(cell_i,cell_j)

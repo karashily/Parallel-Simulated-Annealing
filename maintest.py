@@ -10,7 +10,7 @@ import placer4
 
 def loadInput(filename):
 
-    print('Loading', filename, '...',)
+    # print('Loading', filename, '...',)
 
     # Reading the content of the file:
     content = open(filename, "r").readlines()
@@ -73,6 +73,7 @@ Benchmarks = ['Examples/cm138a.txt',
 
 # Main loop over all benchmarks:
 for inputFile in Benchmarks:
+    print('Loading', inputFile, '...',)
 
     # Load the chip information:
     chip1 = loadInput(inputFile)

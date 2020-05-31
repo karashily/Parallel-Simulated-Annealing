@@ -107,7 +107,7 @@ class Placer():
             else:
                 check = 1
         else:
-            check = exp(-deltaCost*(self.iter-self.lastGoodMove)/(self.iter-self.lastBadMove + 0.0000001)/self.T)
+            check = exp(-deltaCost*(self.iter-self.lastGoodMove)/self.T)
             # check = exp(-deltaCost/round(self.T,14))
 
         if random.uniform(0, 1) <= check:
