@@ -65,6 +65,7 @@ class Chip():
         self.totCost=0
         for net in range(self.netsNo):
             self.totCost += self.calcBoundingBox(net)
+        return self.totCost
 
     def subCalcHpCost(self,i,j):
         affectedNets = self.incidence[i] + self.incidence[j]

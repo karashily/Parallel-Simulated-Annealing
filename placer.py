@@ -1,4 +1,4 @@
-import random
+import random, copy
 from numpy import exp, std, mean,log, absolute, floor
 
 class Placer():
@@ -56,14 +56,18 @@ class Placer():
 
     def getRandomSwap(self):
         [i,j] = random.sample(range(self.chip.cellsNo) ,2)
-        deltaCost = self.chip.swapDeltaCost(i,j)
-        return i,j, deltaCost
+        return i,j
 
     def move(self, lock):
-        lock.acquire()
-        cell_i, cell_j, deltaCost = self.getRandomSwap()
-        lock.release()
 
+        cell_i, cell_j = self.getRandomSwap()
+        copiedChip = copy.deepcopy(self.chip)
+        copiedChip.swapCells(cell_i, cell_j)
+        newCost = copiedChip.calcHpCost()
+
+        lock.acquire()
+        deltaCost = newCost - self.chip.totCost
+        
         self.deltaCostArr.append(deltaCost)
         if self.iter % int(floor(0.01 * self.maxIterNo)) == 0:
             self.sigma = std(self.deltaCostArr)
@@ -80,16 +84,14 @@ class Placer():
             check = exp(-deltaCost*(self.iter-self.lastGoodMove)/self.T)
 
         if random.uniform(0, 1) <= check:
-            lock.acquire()
             self.chip.commitSwap(cell_i,cell_j)
-            lock.release()
             self.currentDeltaCost = deltaCost
             self.accepted = True
             self.consectiveRejection = 0
         else:
             self.accepted = False
             self.consectiveRejection +=1
-
+        lock.release()
         self.updateT()
 
     def anneal(self, lock, chip, T, sigma, i, results):
