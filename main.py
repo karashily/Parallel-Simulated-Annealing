@@ -3,8 +3,8 @@ import os
 import time
 from multiprocessing import Process,Value,Lock,Manager,Lock
 
-import chip
-import placer
+import chip as chip_class
+import placer as placer_class
 
 
 if __name__ == "__main__":
@@ -24,13 +24,13 @@ if __name__ == "__main__":
 
         # Main loop over all benchmarks:
         for inputFile in Benchmarks:
-            chip = chip.Chip.loadChip(inputFile)
+            chip = chip_class.Chip.loadChip(inputFile)
 
             threadsNo = 1
             SAs = []
-            SA = placer.Placer(chip, 5*10**5 / threadsNo)
+            SA = placer_class.Placer(chip, 5*10**5 / threadsNo)
 
-            T, sigma = placer.Placer.initParam(20000, chip)
+            T, sigma = placer_class.Placer.initParam(20000, chip)
             stateLock = Lock()
             results = manager.dict()
             
