@@ -1,98 +1,78 @@
-import load as LD
-import Placer_class as PLC
 from numpy import mean
 import os
 import time
+import chip
+import placer
 
 
-os.system('clear')
 
-print('='*80)
-print('Simulated Annealing Based VLSI Placement')
-print('developed by: Arman Zaribafiyan')
-print('='*80)
+def loadInput(filename):
 
-mode = input('Enter (1) for Benchmark, or (2) for Single Run: ')
+    print('Loading', filename, '...',)
 
-print('Set Verbosity to:')
-print('(0) Final results only.')
-print('(1) Textual output.')
-print('(2) Visual Output:')
+    # Reading the content of the file:
+    content = open(filename, "r").readlines()
 
-visual = input('verbosity: ')
+    # pars the first line of the input line that includes:
+    # the number of cells to be placed, the number of connections between the
+    # cells, and the number of rows and columns upon which the circuit should be
+    # placed.
+    firstLine = content[0].split()
+    cellsNo = int(firstLine[0])
+    connsNo = int(firstLine[1])
+    rowsNo  = int(firstLine[2])
+    colsNo  = int(firstLine[3])
 
-if int(mode) == 1:
-    # Initializing variables and benchmarks:
-    Benchmarks = ['Examples/cm138a.txt',
-    'Examples/cm150a.txt',
-    'Examples/cm151a.txt',
-    'Examples/cm162a.txt',
-    'Examples/alu2.txt',
-    'Examples/C880.txt',
-    'Examples/e64.txt',
-    'Examples/apex1.txt',
-    'Examples/cps.txt',
-    'Examples/paira.txt',
-    'Examples/pairb.txt',
-    'Examples/apex4.txt']
+    netlist =[]
+    # Loop over the 2nd line to the last line of the file to populate the
+    # net list info:
+    for net in range(1, connsNo + 1):
 
-    #Benchmarks = ['Examples/apex4.txt']
-    cost_vec=[]
+        netBlocks = []
 
-    # Main loop over all benchmarks:
-    for  input_adress in Benchmarks:
+        # Read the line in the input file associated with net list "net":
+        netInfo =  content[net].split()
 
-        # Load the chip information:
-        chip1 = LD.load_input(input_adress, verbose = 0)
+        # the first number in the line is the number of blocks
+        netBlockNo = int(netInfo[0])
 
-        # Create a simulated annealing based placement
-        sa_agent = PLC.sa_placer_agent(chip1, 5*10**5, verbose = int(visual))
+        # Append the blocks to the net block list:
+        for i in range(1, netBlockNo + 1):
+            netBlocks.append(int(netInfo[i]))
 
-        # Optimize the placement:
-        t0 = time.time()
+        # Append this net to the master net list:
+        netlist.append(netBlocks)
 
-        final_cost =  sa_agent.anneal()
+    # Create the chip object using the loaded information:
+    new_chip = chip.Chip(rowsNo, colsNo, cellsNo, connsNo, netlist)
 
-        t1=time.time()
+    # Display the imported data:
+    print('Done.')
+    print('Dimension of the chip: ' , rowsNo , 'x', colsNo)
+    print('Number of cells = ', cellsNo)
+    print('Number of nets = ', connsNo)
 
-        # Display the result:
-        print('-'*50)
-        print('Placement Done for chip at', input_adress)
-        print('with final cost:', final_cost)
-        print('Time elapsed:' , t1 - t0)
+    return new_chip
 
-        # Store the cost for stats:
-        cost_vec.append(final_cost)
 
-    # Calculating the stats:
-    AVG_cost = mean(cost_vec)
 
-    # Display Final results:
-    print('='*50)
-    print("Experiment done with average cost:", AVG_cost)
 
-elif int(mode)==2:
+# get the file address:
+inputFile = input('Input File Location: ')
 
-    # get the file address:
-    input_adress = raw_input('Input File Location: ')
+# Load the chip information:
+chip = loadInput(inputFile)
 
-    # Load the chip information:
-    chip1 = LD.load_input(input_adress, verbose=0)
+# Create a simulated annealing based placement
+SA = placer.Placer(chip, 5*10**5)
 
-    # Create a simulated annealing based placement
-    sa_agent = PLC.sa_placer_agent(chip1, 5*10**5, verbose = int(visual))
+# Optimize the placement:
+t0 = time.time()
+cost =  SA.anneal()
+t1 = time.time()
 
-    # Optimize the placement:
-    t0 = time.time()
+# Display the result:
+print('Placement Done for chip at', inputFile)
+print('with final cost:', cost)
+print('Time elapsed:' , t1 - t0)
 
-    final_cost =  sa_agent.anneal()
-
-    t1 = time.time()
-    # Display the result:
-    print('-'*50)
-    print('Placement Done for chip at', input_adress)
-    print('with final cost:', final_cost)
-    print('Time elapsed:' , t1 - t0)
-
-else:
-    print('Wrong input. BYE!')
